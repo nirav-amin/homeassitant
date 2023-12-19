@@ -1,0 +1,2579 @@
+decluttering_templates:
+  header_live_weather_background:
+    card:
+      type: custom:vertical-stack-in-card
+      cards:
+        - type: picture-glance
+          entities: []
+          camera_image: []
+          camera_view: []
+          image: []
+          style: |
+            ha-card {
+              position: absolute;
+              filter: blur(2px);
+              border-radius: 0 !important;
+              background: none;
+              
+              /* Edit the following lines to adjust your camera or your image */
+              
+              width: 1500px;
+              top: 0px;
+              right: 0px;
+              
+              /* If you don't want to use a camera you can replace [] with an image */
+            }
+      style: |
+        ha-card {
+          position: relative !important;
+          margin-bottom: -164px;
+          height: 164px;
+          margin-top: -8px;
+          margin-left: -8px;
+          margin-right: -8px;
+          background: none;
+          animation: opacity 2s ease-in;
+          border-radius: 0 var(--ha-card-border-radius) 0 0;
+        }
+        ha-card:after {
+          content: '';
+          display: block;
+          position: absolute;
+          top: 0;
+          left: -180px;
+          height: 170px;
+          width: 1700px;
+          background: radial-gradient(ellipse at 50% -100%, rgba(35, 46, 66, 0) 25%, rgba(35, 46, 66, 0.8) 55%, rgba(35, 46, 66, 1) 67%);
+        }
+        @media only screen and (max-width: 768px) {
+          ha-card {
+            border-radius: 0 !important;
+          }
+        }
+        @keyframes opacity {
+          0% { opacity: 0; }
+          40% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+  header_temperature_graph:
+    card:
+      type: custom:mini-graph-card
+      entities:
+        - entity: sensor.living_heater_temperature
+          color: null
+      hours_to_show: 24
+      hour24: true
+      animate: true
+      update_interval: 30
+      aggregate_func: avg
+      line_width: 1
+      bar_spacing: 10
+      height: 40
+      group: true
+      show:
+        labels: false
+        fill: false
+        state: false
+        name: false
+        icon: false
+      style: |
+        ha-card {
+          height: 84px;
+          position: absolute;
+          box-shadow: none;
+          background: none;
+          border-radius: 0;
+          opacity: 0.3;
+          margin-bottom: -90px;
+          margin-left: -0.6em;
+          margin-right: -0.6em;
+        }
+  header_main:
+    card:
+      type: custom:paper-buttons-row
+      styles:
+        justify-content: space-between
+        background: none
+        margin: 24px 20px 16px
+        text-shadow: 0px 0px 20px var(--card-background-color);
+      buttons:
+        - layout: name_state
+          name: '{{ states(''sensor.day_eng'') }}, {{ states(''sensor.date_eng'') }}'
+          state: '{{ now().strftime(''%H'') }}:{{ now().strftime(''%M'')}}'
+          styles:
+            name:
+              font-weight: 400
+              font-size: 16px
+              margin-left: 0
+              display: block
+              text-align: left
+              float: left
+              width: 140px
+            button:
+              pointer-events: none
+              align-items: left
+              width: 140px
+              line-height: 1.6em
+            state:
+              font-weight: 700
+              font-size: 30px
+              letter-spacing: '-1px'
+              margin-left: 0
+              display: block
+              text-align: left
+              float: left
+              width: 140px
+        - layout: icon|name_state
+          name: ⌂ {{ states('sensor.openweathermap_temperature') }}°C
+          state: '{{ state_attr(''weather.openweathermap'',''temperature'') }}°C'
+          image: |
+            {% set mapper =
+              { 'breezy':'cloudy',
+                'clear-night':'night',
+                'clear':'day',
+                'mostly-clear':'day',
+                'clear-day':'day',
+                'cloudy':'cloudy',
+                'fog':'fog',
+                'hail':'rainy-7',
+                'haze':'haze',
+                'lightning':'thunder',
+                'mostly-cloudy':'cloudy',
+                'partlycloudy':'cloudy-day-3',
+                'partly-cloudy-day':'partly-cloudy-day',
+                'partly-cloudy-night':'partly-cloudy-night',
+                'rain':'rainy-4',
+                'scattered-showers':'rainy-3',
+                'showers':'rainy-6',
+                'sleet':'sleet',
+                'snow':'snowy-6',
+                'mostly-sunny':'day',
+                'sunny':'day',
+                'thunderstorm':'thunder',
+                'tornado':'tornado',
+                'wind':'wind',
+                'windy':'wind'} %}
+            {% set state = states('weather.ENTER_YOUR_STATE_NAME') %}
+            {% set weather = mapper[state] if state in mapper else 'weather' %}
+            {% set path = '/local/weather_icons/animated/' %}
+            {% set ext = '.svg'%}
+              {{[path,weather,ext]|join('')}}
+          styles:
+            name:
+              font-weight: 400
+              font-size: 16px
+              margin-left: 0
+              display: block
+              text-align: right
+              width: 140px
+            button:
+              pointer-events: none
+              align-items: right
+              width: 140px
+              line-height: 1.6em
+            state:
+              font-weight: 600
+              font-size: 30px
+              letter-spacing: '-1px'
+              margin-left: 0
+              display: block
+              text-align: right
+              width: 140px
+            icon:
+              position: absolute
+              left: 2px
+              transform: scale(0.17)
+              transform-origin: 0 19.5%
+              top: '-48px;'
+              padding: 0;
+              height: 380px !important;
+              width: 380px !important;
+  header_conditional_camera:
+    card:
+      type: conditional
+      conditions:
+        - entity: binary_sensor.sonnette_motion
+          state: 'on'
+      card:
+        type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:frigate-card
+            cameras:
+              - camera_entity: camera.sonnette_pir
+                live_provider: frigate-jsmpeg
+                title: Entrée
+            menu:
+              buttons:
+                frigate:
+                  enabled: false
+              style: none
+        style: |
+          ha-card {
+            margin: 15px 20px;
+            overflow: hidden !important;
+            border-radius: 24px !important;
+          }
+  footer_sticky_menu:
+    card:
+      type: entities
+      entities:
+        - type: custom:paper-buttons-row
+          buttons:
+            - layout: icon
+              icon: mdi:home-circle-outline
+              name: Volets
+              tap_action:
+                action: navigate
+                navigation_path: '#house'
+              style:
+                button:
+                  width: 42px
+                  height: 42px
+                icon:
+                  margin-top: 0
+                name:
+                  margin-top: 20px
+            - layout: icon
+              icon: mdi:lightbulb-group
+              name: Liste
+              tap_action:
+                action: navigate
+                navigation_path: '#alllights'
+              style:
+                button:
+                  width: 42px
+                  height: 42px
+                icon:
+                  margin-top: 0
+                name:
+                  margin-top: 20px
+            - icon: mdi:video
+              layout: icon
+              name: Sécurité
+              tap_action:
+                action: navigate
+                navigation_path: '#security'
+              style:
+                button:
+                  width: 42px
+                  height: 42px
+                icon:
+                  margin-top: 0
+                name:
+                  margin-top: 20px
+            - layout: icon
+              icon: mdi:thermostat
+              name: Heating
+              tap_action:
+                action: navigate
+                navigation_path: '#heating'
+              style:
+                button:
+                  width: 42px
+                  height: 42px
+                icon:
+                  margin-top: 0
+                name:
+                  margin-top: 20px
+          style: |
+            div.flex-box {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin: -14px !important;   
+            }
+      style: |
+        ha-card { 
+          margin-bottom: 10px !important;
+          padding: 0 16px;
+          border-radius: 34px !important;
+          margin-left: 20px;
+          margin-right: 20px;
+        }
+title: ''
+views:
+  - theme: noctis
+    icon: ''
+    path: default_view
+    title: HOME
+    visible:
+      - user: a27a825440914ad7a919367c2e53793e
+      - user: aadd52d881af46bca495e279bee867bf
+      - user: 10a78a75e63f4c5ba22a81742f59b925
+    type: sidebar
+    badges: []
+    cards:
+      - type: custom:decluttering-card
+        template: header_temperature_graph
+      - type: custom:decluttering-card
+        template: header_main
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: grid
+                square: true
+                columns: 2
+                cards:
+                  - type: entities
+                    show_header_toggle: false
+                    style: |
+                      * {
+                        padding: 0px;
+                      }
+                      h1.card-header {
+                        padding: 10px;
+                        margin-top: -4px
+                      }
+                      #states {
+                        padding: 10px;
+                      }
+                      ha-card {
+                        {% if is_state('person.ENTER_YOUR_PERSON_NAME','home') %}
+                        background: radial-gradient(at bottom, rgba(255,255,255, 0.26) 0%, rgba(43,55,78,0) 70%);
+                        background-size: 140% 70%;
+                        background-repeat: no-repeat;
+                        background-position: 50% 100%;
+                        background-color: #3e4c69;
+                        transition: background 1.5s, background-position 2s, background-color 1.5s;
+                        transition-delay: 0.6s;
+                        {% else %}
+                        transition: background 1.5s;
+                        transition-delay: 0.2s;
+                        background-color: var( --ha-card-background, var(--card-background-color, white) );
+                        background-size: 140% 70%;
+                        background-position: 50% 360%;
+                        {% endif %}
+                      }
+                    entities:
+                      - entity: person.ENTER_YOUR_PERSON_NAME
+                        state_color: false
+                        name: ‎
+                        style: |
+                          hui-generic-entity-row {
+                            margin-bottom: 14px;
+                            margin-top: -2px;
+                            padding: 0.6em;
+                          }
+                      - type: section
+                        label: Nirav
+                        style: |
+                          div.divider { 
+                            display: none;
+                          }
+                          div.label { 
+                            margin-top: -12px;
+                            margin-bottom: 10px;
+                            font-size: 17px;
+                            font-weight: 600
+                          }
+                      - entity: sensor.iphone_geocoded_location
+                        name: ‎
+                        icon: none
+                        style: |
+                          * {
+                            display: inline !important;
+                            position: absolute !important;
+                            top: 0px;
+                            left: 0 !important;
+                            width: 94%;
+                            text-align: left !important;
+                            padding: 0 0 0 8px; 
+                            margin-top: -3px;
+                            opacity: 0.8;
+                            font-size: 0.9em;
+                            line-height: 1.4em;
+                          }
+                          style {
+                            opacity: 0 !important;
+                          }
+                    footer:
+                      type: custom:paper-buttons-row
+                      styles:
+                        justify-content: space-between;
+                        padding: 8px;
+                        width: auto;
+                        margin-top: '-6px;'
+                        margin-bottom: 0px;
+                        filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5));
+                      buttons:
+                        - name: '{{ states("sensor.iphone_battery_level") }}%'
+                          entity: sensor.iphone_battery_level
+                        - name: false
+                  - type: entities
+                    show_header_toggle: false
+                    style: |
+                      * {
+                        padding: 0px;
+                      }
+                      h1.card-header {
+                        padding: 10px;
+                        margin-top: -4px
+                      }
+                      #states {
+                        padding: 10px !important;
+                      }
+                      ha-card {
+                        {% if is_state('sensor.iphone_geocoded_location','Présent') %}
+                        background: radial-gradient(at bottom, rgba(255,255,255, 0.26) 0%, rgba(43,55,78,0) 70%);
+                        background-size: 140% 70%;
+                        background-repeat: no-repeat;
+                        background-position: 50% 100%;
+                        background-color: #3e4c69;
+                        transition: background 1.5s, background-position 2s, background-color 1.5s;
+                        transition-delay: 0.6s;
+                        {% else %}
+                        transition: background 1.5s;
+                        transition-delay: 0.2s;
+                        background-color: var( --ha-card-background, var(--card-background-color, white) );
+                        background-size: 140% 70%;
+                        background-position: 50% 360%;
+                        {% endif %}
+                      }
+                    entities:
+                      - entity: person.ENTER_YOUR_PERSON_NAME
+                        state_color: false
+                        name: ‎
+                        style: |
+                          hui-generic-entity-row {
+                            margin-bottom: 14px;
+                            margin-top: -2px;
+                            padding: 0.6em;
+                          }
+                      - type: section
+                        label: Prathmesh
+                        style: |
+                          div.divider { 
+                            display: none;
+                          }
+                          div.label { 
+                            margin-top: -12px;
+                            margin-bottom: 10px;
+                            font-size: 17px;
+                            font-weight: 600
+                          }
+                      - entity: sensor.prathmesh_iphone_geocoded_location
+                        name: ‎
+                        icon: none
+                        style: |
+                          * {
+                            display: inline !important;
+                            position: absolute !important;
+                            top: 0px;
+                            left: 0 !important;
+                            width: 94%;
+                            text-align: left !important;
+                            padding: 0 0 0 8px; 
+                            margin-top: -3px;
+                            opacity: 0.8;
+                            font-size: 0.9em;
+                            line-height: 1.4em;
+                          }
+                          style {
+                            display: none !important;
+                            opacity: 0 !important;
+                          }
+                    footer:
+                      type: custom:paper-buttons-row
+                      styles:
+                        justify-content: space-between;
+                        padding: 8px;
+                        width: auto;
+                        margin-top: '-6px;'
+                        margin-bottom: 0px;
+                        filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5));
+                      buttons:
+                        - name: >-
+                            {{ states("sensor.prathmesh_iphone_battery_level")
+                            }}%
+                          entity: sensor.prathmesh_iphone_battery_level
+        style: |
+          ha-card { 
+            margin: 14px 20px !important;
+            background: none;
+            box-shadow: none;
+          }
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: grid
+                square: true
+                columns: 2
+                cards:
+                  - type: custom:vertical-stack-in-card
+                    cards:
+                      - type: custom:weather-card
+                        entity: weather.niravs_home
+                        icons: /local/icons/weather_icons/animated/
+                        number_of_forecasts: '3'
+                        current: false
+                        details: false
+                        forecast: true
+                        hourly_forecast: false
+                        style: |
+                          ha-card { 
+                            background: none;
+                            box-shadow: none;
+                            padding: 0 !important;
+                            font-size: 12px;
+                          }
+                          div.precipitation {
+                            display: none;
+                          }
+                          div.precipitation_probability {
+                            display: none;
+                          }
+                          i.icon {
+                            transform: scale(0.17);
+                            transform-origin: 0 19.5%;
+                            margin-left: -1.4em !important;
+                            position: absolute;
+                            top: -18px;
+                            padding: 0;
+                            height: 240% !important;
+                            width: 240% !important;
+                          }
+                          .dayname:after {
+                            content:'';
+                            height: 3.4em;
+                            width: 3.5em;
+                            display: block;
+                            margin-top: -20px;
+                          }
+                          .dayname {
+                            margin-top: -6px
+                          }
+                          div.day {
+                            border-right: 0.06em solid rgb(26,137,245,0.3);
+                          }
+                          div.lowTemp {
+                            margin-top: -10px;
+                          }
+                      - type: custom:atomic-calendar-revive
+                        entities:
+                          - entity: calendar.nirav_amin87_gmail_com
+                            name: My Calendar
+                            color: white
+                            max_results: 11
+                            icon: mdi:calendar
+                        firstDayOfWeek: 1
+                        refreshInterval: 60
+                        showDate: false
+                        hideDuplicates: false
+                        hideFinishedEvents: true
+                        showCurrentEventLine: false
+                        showProgressBar: false
+                        showMonth: true
+                        showWeekDay: false
+                        showDescription: false
+                        disableEventLink: true
+                        showFullDayProgress: false
+                        showEventIcon: false
+                        showHiddenText: false
+                        showCalendarName: false
+                        showWeekNumber: false
+                        calShowDescription: false
+                        showLastCalendarWeek: false
+                        dimFinishedEvents: true
+                        disableCalLink: true
+                        disableCalLocationLink: true
+                        disableCalEventLink: truemaxEventCount
+                        noEventsForNextDaysText: No events in the next few days
+                        showLoader: false
+                        maxEventCount: 4
+                        cardHeight: 70px
+                        maxDaysToShow: 90
+                        showDatePerEvent: true
+                        language: en
+                        style: |
+                          ha-card { 
+                            width: 100%;
+                            padding: 10px 14% 0 0   !important;
+                            position: absolute;
+                            bottom: 6%;
+                            background: none !important;
+                          }
+                          ha-card > div > table > tbody > tr.daywrap {
+                            border-top: none;
+                          }
+                          ha-card > div > table > tbody {
+                            padding: 0px !important;
+                          }
+                          ha-card > div > table {
+                            margin-top: -10px !important;
+                            animation: scroll 15s ease infinite;
+                          }
+                          ha-card > div > table > tbody > tr > td {
+                            padding-bottom: 20px !important;
+                            padding-top: 2px !important;
+                          }
+                          ha-card > div {
+                            padding-top: 0.3em !important;
+                            margin: 0 !important;
+                          }
+                          div.event-main {
+                            width: 100% !important;
+                            #white-space: nowrap !important;
+                            #overflow: visible !important;
+                            text-overflow: ellipsis !important;
+                            height: 3em !important;
+                          }
+                          ha-card > div > table > tbody {
+                            font-size: 13px;
+                            line-height: 18px;
+                          }
+                          div.relativeTime {
+                            display: none;
+                          }
+                          .hoursHTML {
+                            overflow: hidden;
+                            position: absolute;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 1; /* number of lines to show */
+                            line-clamp: 1; 
+                            -webkit-box-orient: vertical;
+                          }
+                          .event-location {
+                            display: none !important;
+                          }
+                          div.event-main {
+                            overflow: hidden;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 2; /* number of lines to show */
+                            line-clamp: 2; 
+                            -webkit-box-orient: vertical;
+                          }
+                          @keyframes scroll {
+                            0% { opacity: 0; transform: translateY(0); }
+                            3% { opacity: 1; transform: translateY(0); }
+                            20% { opacity: 1; transform: translateY(0); }
+                            23% { opacity: 0; transform: translateY(0); }
+                            26% { transform: translateY(calc(-25%)); opacity: 0;}
+                            29% { transform: translateY(calc(-25%)); opacity: 1;}
+                            46% { transform: translateY(calc(-25%)); opacity: 1;}
+                            49% { transform: translateY(calc(-25%)); opacity: 0;}
+                            52% { transform: translateY(calc(-50%)); opacity: 0;}
+                            55% { transform: translateY(calc(-50%)); opacity: 1;}
+                            72% { transform: translateY(calc(-50%)); opacity: 1;}
+                            75% { transform: translateY(calc(-50%)); opacity: 0;}
+                            78% { transform: translateY(calc(-75%)); opacity: 0;}
+                            81% { transform: translateY(calc(-75%)); opacity: 1;}
+                            97% { transform: translateY(calc(-75%)); opacity: 1;}
+                            100% { transform: translateY(calc(-75%)); opacity: 0;}
+                          }
+                    style: |
+                      ha-card { 
+                        box-shadow: none;
+                        height: 100% !important;
+                        padding: 12% 7%;
+                      }
+                  - type: custom:vertical-stack-in-card
+                    cards:
+                      - type: conditional
+                        conditions:
+                          - entity: media_player.bedroom
+                            state: 'off'
+                        card:
+                          type: custom:paper-buttons-row
+                          buttons:
+                            - entity: switch.deezer
+                              icon: mdi:music
+                              layout: icon_name
+                              name: Flow Deezer
+                              state_styles:
+                                'off':
+                                  button:
+                                    position: absolute;
+                                    top: 50%;
+                                    border-radius: 100%;
+                                    width: 42px
+                                    height: 42px
+                                    margin-top: '-46px'
+                                    filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.2))
+                                    background: >-
+                                      var( --ha-card-background,
+                                      var(--card-background-color, white) );
+                                    background-size: 140% 70%
+                                    background-repeat: no-repeat
+                                    background-position: 50% 100%
+                                    background-color: '#3e4c69'
+                                  icon:
+                                    margin-top: 44px
+                                  name:
+                                    margin-top: 20px
+                                    width: 100px
+                                'on':
+                                  button:
+                                    display: none;
+                      - type: conditional
+                        conditions:
+                          - entity: media_player.bedroom
+                            state_not: 'off'
+                        card:
+                          type: custom:mini-media-player
+                          volume_stateless: true
+                          name: Salon
+                          group: false
+                          volume_step: '3'
+                          entity: media_player.bedroom
+                          sound_mode: full
+                          artwork: full-cover
+                          toggle_power: false
+                          source: icon
+                          hide:
+                            name: true
+                            source: true
+                          style: >
+                            ha-card {
+                              height: 100% !important;
+                              width: 100% !important;
+                              position: absolute !important;
+                            }   .flex {
+                              display: block;
+                              {% if not is_state('media_player.bedroom','off') %}
+                              filter: drop-shadow(0px 2px 2px rgba(0,0,0,1));
+                              {% else %}
+                              {% endif %}
+                            }   ha-card.--has-artwork .cover{
+                              opacity: 0.9;
+                            }  .entity__info__media {
+                              opacity: 1 !important;
+                              padding-right: 16px;
+                              overflow: hidden;
+                              height: 4.4em;
+                              height: 100%;
+                            }  div.entity__icon {
+                              {% if not is_state('media_player.bedroom','off') %}
+                              display: none;
+                              {% endif %}
+                            }   mmp-media-controls {
+                              {% if not is_state('media_player.bedroom','off') %}
+                              filter: drop-shadow(0px 2px 2px rgba(0,0,0,1));
+                              flex-wrap: wrap-reverse !important;
+                              {% endif %}
+                            } ha-card > div.mmp-player {
+                              padding: 12px !important;
+                              {% if not is_state('media_player.bedroom','off') %}
+                              {% else %}
+                              #display: none !important;
+                              {% endif %}
+                            }   ha-card > div.mmp-player {
+                              {% if is_state_attr('media_player.bedroom','media_content_id', 'Bluetooth') %}
+                              position: relative;
+                              height: 20vh;
+                              {% else %}
+                              position: absolute;
+                              align-self: flex-start;
+                              height: 100%;
+                              {% endif %}
+                              background: radial-gradient(circle, rgba(0,0,0,0) 10%, rgba(0,0,0,0.6) 100%) !important;
+                              font-size: 0.9em !important;
+                            }   ha-card > div.mmp-player > div.mmp-player__adds
+                            {
+                              position: absolute;
+                              bottom: 14px;
+                              padding: 0 16px 0 0;
+                            }   div.flex.mmp-media-controls__media {
+                              margin-bottom: -5px !important;
+                            }
+                    style: |
+                      ha-card {
+                        height: 100% !important;
+                        width: 100% !important;
+                      } 
+        style: |
+          ha-card { 
+            margin: 14px 20px !important;
+            background: none;
+          }
+          .type-custom-vertical-stack-in-card {
+            overflow: visible !important;
+          }
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: separator
+            name: Rooms
+            style: |
+              {
+              opacity: 0!important
+              }
+            icon: phu:rooms-guest-room
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:slider-button-card
+                entity: light.second_floor
+                name: My Room
+                slider:
+                  direction: left-right
+                  background: gradient
+                  use_state_color: true
+                  use_percentage_bg_opacity: true
+                  show_track: false
+                  toggle_on_click: false
+                  force_square: false
+                show_name: true
+                show_state: false
+                compact: true
+                icon:
+                  show: true
+                  use_state_color: false
+                  icon: mdi:bed
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#myroom'
+                action_button:
+                  mode: custom
+                  icon: mdi:chevron-right
+                  show_spinner: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#myroom'
+                style: |
+                  :host {
+                    font-weight: 600;
+                    margin-right: 7px !important;
+                  }
+                  ha-card > div > div.text {
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: -1px;
+                    letter-spacing: -0.2px;
+                  }
+                  div.icon {
+                    margin: 4px 2px 4px 4px;
+                    font-size: 10px;
+                  }
+                  ha-card > div > div.text > div {
+                    overflow: visible;
+                  }
+                  ha-card { 
+                    border-radius: 26px !important;
+                  }
+                  ha-card > div > div.action {
+                    position: absolute;
+                    top: 13px;
+                    right: 6px;
+                    font-size: 12px;
+                  }
+              - type: custom:slider-button-card
+                entity: light.office
+                name: Office
+                slider:
+                  direction: left-right
+                  background: gradient
+                  use_state_color: true
+                  use_percentage_bg_opacity: true
+                  show_track: false
+                  toggle_on_click: false
+                  force_square: false
+                show_name: true
+                show_state: false
+                compact: true
+                icon:
+                  show: true
+                  use_state_color: false
+                  icon: mdi:chair-rolling
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#office'
+                action_button:
+                  mode: custom
+                  icon: mdi:chevron-right
+                  show_spinner: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#office'
+                style: |
+                  :host {
+                    font-weight: 600;
+                    margin-left: 7px !important;
+                  }
+                  ha-card > div > div.text {
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: -1px;
+                    letter-spacing: -0.2px;
+                  }
+                  div.icon {
+                    margin: 4px 2px 4px 4px;
+                    font-size: 10px;
+                  }
+                  ha-card > div > div.text > div {
+                    overflow: visible;
+                  }
+                  ha-card { 
+                    border-radius: 26px !important;
+                  }
+                  ha-card > div > div.action {
+                    position: absolute;
+                    top: 13px;
+                    right: 6px;
+                    font-size: 12px;
+                  }
+        style: |
+          ha-card { 
+            margin: 14px 20px !important;
+            background: none;
+          }
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:slider-button-card
+                entity: light.nidhi_room_2
+                slider:
+                  direction: left-right
+                  background: gradient
+                  use_state_color: true
+                  use_percentage_bg_opacity: true
+                  show_track: false
+                  toggle_on_click: false
+                  force_square: false
+                show_name: true
+                show_state: false
+                compact: true
+                icon:
+                  show: true
+                  use_state_color: false
+                  icon: mdi:bed
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#nidhiroom'
+                action_button:
+                  mode: custom
+                  icon: mdi:chevron-right
+                  show_spinner: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#nidhiroom'
+                style: |
+                  :host {
+                    font-weight: 600;
+                    margin-right: 7px !important;
+                  }
+                  ha-card > div > div.text {
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: -1px;
+                    letter-spacing: -0.2px;
+                  }
+                  div.icon {
+                    margin: 4px 2px 4px 4px;
+                    font-size: 10px;
+                  }
+                  ha-card > div > div.text > div {
+                    overflow: visible;
+                  }
+                  ha-card { 
+                    border-radius: 26px !important;
+                  }
+                  ha-card > div > div.action {
+                    position: absolute;
+                    top: 13px;
+                    right: 6px;
+                    font-size: 12px;
+                  }
+              - type: custom:slider-button-card
+                entity: light.living_room
+                name: living room
+                slider:
+                  direction: left-right
+                  background: gradient
+                  use_state_color: true
+                  use_percentage_bg_opacity: true
+                  show_track: false
+                  toggle_on_click: false
+                  force_square: false
+                show_name: true
+                show_state: false
+                compact: true
+                icon:
+                  show: true
+                  use_state_color: false
+                  icon: mdi:sofa-outline
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#livingroom'
+                action_button:
+                  mode: custom
+                  icon: mdi:chevron-right
+                  show_spinner: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#livingroom'
+                style: |
+                  :host {
+                    font-weight: 600;
+                    margin-left: 7px !important;
+                  }
+                  ha-card > div > div.text {
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: -1px;
+                    letter-spacing: -0.2px;
+                  }
+                  div.icon {
+                    margin: 4px 2px 4px 4px;
+                    font-size: 10px;
+                  }
+                  ha-card > div > div.text > div {
+                    overflow: visible;
+                  }
+                  ha-card { 
+                    border-radius: 26px !important;
+                  }
+                  ha-card > div > div.action {
+                    position: absolute;
+                    top: 13px;
+                    right: 6px;
+                    font-size: 12px;
+                  }
+        style: |
+          ha-card { 
+            margin: 14px 20px !important;
+            background: none;
+          }
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:slider-button-card
+                entity: light.kitchen
+                slider:
+                  direction: left-right
+                  background: gradient
+                  use_state_color: true
+                  use_percentage_bg_opacity: true
+                  show_track: false
+                  toggle_on_click: false
+                  force_square: false
+                show_name: true
+                show_state: false
+                compact: true
+                icon:
+                  show: true
+                  use_state_color: false
+                  icon: phu:kitchen-alt
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#kitchen'
+                action_button:
+                  mode: custom
+                  icon: mdi:chevron-right
+                  show_spinner: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#kitchen'
+                style: |
+                  :host {
+                    font-weight: 600;
+                    margin-right: 7px !important;
+                  }
+                  ha-card > div > div.text {
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: -1px;
+                    letter-spacing: -0.2px;
+                  }
+                  div.icon {
+                    margin: 4px 2px 4px 4px;
+                    font-size: 10px;
+                  }
+                  ha-card > div > div.text > div {
+                    overflow: visible;
+                  }
+                  ha-card { 
+                    border-radius: 26px !important;
+                  }
+                  ha-card > div > div.action {
+                    position: absolute;
+                    top: 13px;
+                    right: 6px;
+                    font-size: 12px;
+                  }
+              - type: custom:slider-button-card
+                entity: light.dining_room
+                name: Dining Room
+                slider:
+                  direction: left-right
+                  background: gradient
+                  use_state_color: true
+                  use_percentage_bg_opacity: true
+                  show_track: false
+                  toggle_on_click: false
+                  force_square: false
+                show_name: true
+                show_state: false
+                compact: true
+                icon:
+                  show: true
+                  use_state_color: false
+                  icon: mdi:silverware-fork-knife
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#diningroom'
+                action_button:
+                  mode: custom
+                  icon: mdi:chevron-right
+                  show_spinner: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#diningroom'
+                style: |
+                  :host {
+                    font-weight: 600;
+                    margin-left: 7px !important;
+                  }
+                  ha-card > div > div.text {
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: -1px;
+                    letter-spacing: -0.2px;
+                  }
+                  div.icon {
+                    margin: 4px 2px 4px 4px;
+                    font-size: 10px;
+                  }
+                  ha-card > div > div.text > div {
+                    overflow: visible;
+                  }
+                  ha-card { 
+                    border-radius: 26px !important;
+                  }
+                  ha-card > div > div.action {
+                    position: absolute;
+                    top: 13px;
+                    right: 6px;
+                    font-size: 12px;
+                  }
+        style: |
+          ha-card { 
+            margin: 14px 20px !important;
+            background: none;
+          }
+      - type: custom:decluttering-card
+        template: header_conditional_camera
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: separator
+            style: |
+              {
+              opacity: 0!important
+              }
+            name: Lights
+            icon: phu:bulb-group
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:slider-button-card
+                entity: light.all_lights
+                slider:
+                  direction: left-right
+                  background: gradient
+                  use_state_color: true
+                  use_percentage_bg_opacity: true
+                  show_track: false
+                  toggle_on_click: false
+                  force_square: false
+                show_name: true
+                show_state: false
+                compact: true
+                icon:
+                  show: true
+                  use_state_color: false
+                  icon: mdi:home-lightbulb
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#alllights'
+                action_button:
+                  mode: custom
+                  icon: mdi:chevron-right
+                  show_spinner: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#alllights'
+                style: |
+                  :host {
+                    margin-right: 7px !important;
+                  }
+                  ha-card > div > div.text {
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: -1px;
+                    letter-spacing: -0.2px;
+                  }
+                  div.icon {
+                    margin: 4px 2px 4px 4px;
+                    font-size: 10px;
+                  }
+                  ha-card > div > div.text > div {
+                    overflow: visible;
+                  }
+                  ha-card { 
+                    border-radius: 26px !important;
+                  }
+                  ha-card > div > div.action {
+                    position: absolute;
+                    top: 13px;
+                    right: 6px;
+                    font-size: 12px;
+                  }
+              - type: custom:slider-button-card
+                entity: light.ground_floor_lights
+                slider:
+                  direction: left-right
+                  background: gradient
+                  use_state_color: true
+                  use_percentage_bg_opacity: true
+                  show_track: false
+                  toggle_on_click: false
+                  force_square: false
+                show_name: true
+                show_state: false
+                compact: true
+                icon:
+                  show: true
+                  use_state_color: false
+                  icon: mdi:home-floor-0
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#groundfloorlights'
+                action_button:
+                  mode: custom
+                  icon: mdi:chevron-right
+                  show_spinner: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#groundfloorlights'
+                style: |
+                  :host {
+                    font-weight: 600;
+                    margin-left: 7px !important;
+                  }
+                  ha-card > div > div.text {
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: -1px;
+                    letter-spacing: -0.2px;
+                  }
+                  div.icon {
+                    margin: 4px 2px 4px 4px;
+                    font-size: 10px;
+                  }
+                  ha-card > div > div.text > div {
+                    overflow: visible;
+                  }
+                  ha-card { 
+                    border-radius: 26px !important;
+                  }
+                  ha-card > div > div.action {
+                    position: absolute;
+                    top: 13px;
+                    right: 6px;
+                    font-size: 12px;
+                  }
+        style: |
+          ha-card { 
+            margin: 14px 20px !important;
+            background: none;
+          }
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:slider-button-card
+                entity: light.first_floor
+                slider:
+                  direction: left-right
+                  background: gradient
+                  use_state_color: true
+                  use_percentage_bg_opacity: true
+                  show_track: false
+                  toggle_on_click: false
+                  force_square: false
+                show_name: true
+                show_state: false
+                compact: true
+                icon:
+                  show: true
+                  use_state_color: false
+                  icon: mdi:home-floor-1
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#firstfloorlights'
+                action_button:
+                  mode: custom
+                  icon: mdi:chevron-right
+                  show_spinner: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#firstfloorlights'
+                style: |
+                  :host {
+                    font-weight: 600;
+                    margin-right: 7px !important;
+                  }
+                  ha-card > div > div.text {
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: -1px;
+                    letter-spacing: -0.2px;
+                  }
+                  div.icon {
+                    margin: 4px 2px 4px 4px;
+                    font-size: 10px;
+                  }
+                  ha-card > div > div.text > div {
+                    overflow: visible;
+                  }
+                  ha-card { 
+                    border-radius: 26px !important;
+                  }
+                  ha-card > div > div.action {
+                    position: absolute;
+                    top: 13px;
+                    right: 6px;
+                    font-size: 12px;
+                  }
+              - type: custom:slider-button-card
+                entity: light.second_floor
+                slider:
+                  direction: left-right
+                  background: gradient
+                  use_state_color: true
+                  use_percentage_bg_opacity: true
+                  show_track: false
+                  toggle_on_click: false
+                  force_square: false
+                show_name: true
+                show_state: false
+                compact: true
+                icon:
+                  show: true
+                  use_state_color: false
+                  icon: mdi:home-floor-2
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#secondfloorlights'
+                action_button:
+                  mode: custom
+                  icon: mdi:chevron-right
+                  show_spinner: false
+                  tap_action:
+                    action: navigate
+                    navigation_path: '#secondfloorlights'
+                style: |
+                  :host {
+                    font-weight: 600;
+                    margin-left: 7px !important;
+                  }
+                  ha-card > div > div.text {
+                    font-weight: 600;
+                    font-size: 14px;
+                    margin-top: -1px;
+                    letter-spacing: -0.2px;
+                  }
+                  div.icon {
+                    margin: 4px 2px 4px 4px;
+                    font-size: 10px;
+                  }
+                  ha-card > div > div.text > div {
+                    overflow: visible;
+                  }
+                  ha-card { 
+                    border-radius: 26px !important;
+                  }
+                  ha-card > div > div.action {
+                    position: absolute;
+                    top: 13px;
+                    right: 6px;
+                    font-size: 12px;
+                  }
+        style: |
+          ha-card { 
+            margin: 14px 20px !important;
+            background: none;
+          }
+      - type: button
+        tap_action:
+          action: navigate
+          navigation_path: /config/dashboard
+        name: Settings
+        show_state: false
+        show_name: false
+        style: |
+          ha-card { 
+            margin: 0 0px 0 15px;
+            box-shadow: none;
+            background: rgba(0,0,0,0);
+            opacity: 0;
+            font-size: 18px;
+            overflow: hidden;    
+          }
+          ha-card > ha-state-icon {
+            height: 0px;
+          }
+      - type: custom:vertical-stack-in-card
+        cards:
+          - type: custom:decluttering-card
+            template: footer_sticky_menu
+        style: |
+          :host {
+            position: sticky !important;
+            bottom: 26px;
+            margin-bottom: 10px !important;
+            animation: 1.2s position ease-in-out;
+          }
+          @keyframes position {
+            0% { bottom: -80px; }
+            20% { bottom: -80px; }
+            70% { bottom: 26px; }
+            90% { bottom: 24px; }
+            100% { bottom: 26px; }
+          }
+          ha-card { 
+            background: none;
+            border-radius: 26px !important;
+          }
+          :host:before {
+            content: '';
+            display: block;
+            position: absolute;
+            bottom: -26px;
+            left: -8px;
+            padding-right: 16px;
+            height: 130px;
+            width: 100%; 
+            background: linear-gradient(180deg, rgba(45, 56, 76, 0) 0%, rgba(35, 46, 66, 0.85) 50%);
+            pointer-events: none;
+            animation: 1.2s opacity ease-in-out;
+          }
+          @keyframes opacity {
+            0% { opacity: 0; }
+            20% { opacity: 0; }
+            100% { opacity: 1; }
+          }
+          ### The sticky position don't work with Decluttering card
+          ### This is why I have to add the CSS here
+          ### If you don't use the UI you can use YAML anchors instead
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#house'
+            icon: mdi:home-circle-outline
+            state: sensor.house_temprature
+            name: House
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Batteries
+            icon: phu:battery-charged
+          - type: custom:battery-state-card
+            sort_by_level: asc
+            collapse: 4
+            entities:
+              - entity: sensor.iphone_battery_level
+                name: Nirav's iPhone
+                charging_state:
+                  entity_id: sensor.iphone_battery_state
+                  state: Charging
+              - entity: sensor.prathmesh_iphone_battery_level
+                name: Prathmesh iPhone
+                charging_state:
+                  entity_id: sensor.prathmesh_iphone_battery_state
+                  state: Charging
+              - entity: sensor.niravs_ipad_pro_battery_level
+                name: Nirav's iPad Pro
+                charging_state:
+                  entity_id: sensor.niravs_ipad_pro_battery_state
+                  state: Charging
+            filter:
+              include:
+                - name: entity_id
+                  value: '*_battery'
+          - type: custom:bubble-card
+            card_type: separator
+            entity: light.kitchen
+            name: Temperature
+            button_type: slider
+            icon: phu:thermostat
+          - type: custom:swipe-card
+            card_width: 185px
+            start_card: 2
+            parameters:
+              effect: coverflow
+              grabCursor: true
+              centeredSlides: true
+              slidesPerView: auto
+              coverflowEffect:
+                rotate: 40
+                stretch: 0
+                depth: 100
+                modifier: 1
+                slideShadows: true
+              pagination:
+                type: bullets
+            cards:
+              - type: custom:mini-graph-card
+                name: Ground Floor
+                entities:
+                  - sensor.living_heater_temperature
+                show:
+                  labels: true
+                color_thresholds:
+                  - value: 20
+                    color: '#f39c12'
+                  - value: 21
+                    color: '#d35400'
+                  - value: 21.5
+                    color: '#c0392b'
+                mcg-title-font-weight:
+                  - value: 100
+              - type: custom:mini-graph-card
+                name: First Floor
+                entities:
+                  - sensor.passage_motion_sensor_temperature
+                show:
+                  labels: true
+                color_thresholds:
+                  - value: 20
+                    color: '#f39c12'
+                  - value: 21
+                    color: '#d35400'
+                  - value: 21.5
+                    color: '#c0392b'
+              - type: custom:mini-graph-card
+                name: Second Floor
+                entities:
+                  - sensor.hue_motion_sensor_1_temperature
+                show:
+                  labels: true
+                color_thresholds:
+                  - value: 20
+                    color: '#f39c12'
+                  - value: 21
+                    color: '#d35400'
+                  - value: 21.5
+                    color: '#c0392b'
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#alllights'
+            icon: phu:bulb-group-classic-hung-4-alt
+            state: sensor.light_count
+            name: All Lights
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+            text: lights are on
+          - type: custom:bubble-card
+            card_type: separator
+            name: My Room
+            icon: phu:bulb-group-classic-hung-4
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_room_ceiling_lights
+                name: Ceiling Lights
+                button_type: slider
+                icon: phu:bulb-sultan-group-v2
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_desk_2
+                name: Desk Light
+                button_type: slider
+                icon: phu:desk-stand-alt
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.canvas_cfd6
+                button_type: slider
+                name: Nano Leaf Canvas
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_tv_light
+                name: TV Light
+                button_type: slider
+                icon: mdi:television-ambient-light
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_toilet
+                name: Bathroom Light
+                button_type: slider
+                icon: phu:bulb-flood
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.cupboard
+                button_type: slider
+                icon: mdi:cupboard-outline
+                name: Cuboard Light
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.media_cabinet_light
+                name: Media Cabinet Light
+                button_type: slider
+                icon: mdi:audio-video
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:bulb-group
+            name: Living Room
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.living_room_2
+                name: Left Lamp
+                button_type: slider
+                icon: phu:bulb-sultan-group-v2
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.living_room_3
+                name: Right Lamp
+                button_type: slider
+                icon: phu:bulb-sultan-group-v2
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:bulb-group
+            name: Porch
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.porch_light
+                name: Porch Lamp
+                button_type: slider
+                icon: phu:bulb-filament-alt
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:bulb-group
+            name: Kithchen
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.kitchen
+                name: Left Cabinet
+                button_type: slider
+                icon: phu:light-strip
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.kitchen_2
+                name: Right Cabinet
+                button_type: slider
+                icon: phu:light-strip
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:bulb-group
+            name: Dinning Room
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.dining_room
+                name: Lamp
+                button_type: slider
+                icon: phu:bulbs-classic
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:bulb-group
+            name: Nidhi's Room
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.nidhi_room
+                name: Lamp
+                button_type: slider
+                icon: phu:bulbs-classic
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:bulb-group
+            name: Passage
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.passage
+                name: Passage
+                button_type: slider
+                icon: phu:bulbs-classic
+                show_state: false
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:bulb-group
+            name: Office
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.office_light
+                name: Ceiling Light
+                button_type: slider
+                icon: phu:ceiling-lamp
+            columns: 2
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#security'
+            icon: mdi:shield
+            name: Security
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Cameras
+            icon: phu:unifi-protect
+          - square: false
+            type: grid
+            cards:
+              - camera_view: live
+                type: picture-glance
+                entities: []
+                title: Front Door
+                camera_image: camera.192_168_1_1_5
+              - camera_view: live
+                type: picture-glance
+                entities: []
+                title: Front Door Right
+                camera_image: camera.192_168_1_1_2
+                theme: noctis
+              - camera_view: live
+                type: picture-glance
+                entities: []
+                title: Front House High
+                camera_image: camera.192_168_1_1
+                theme: noctis
+              - camera_view: live
+                type: picture-glance
+                entities: []
+                title: Kitchen
+                camera_image: camera.192_168_1_1_4
+                theme: noctis
+              - camera_view: live
+                type: picture-glance
+                entities: []
+                title: Garden
+                camera_image: camera.192_168_1_1_3
+                theme: noctis
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            name: Sensors
+            icon: phu:aqara-contact
+          - columns: 4
+            type: grid
+            cards:
+              - type: custom:mushroom-entity-card
+                layout: vertical
+                icon: mdi:motion-sensor
+                entity: binary_sensor.porch_door_contact
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.kitche_left_window
+                layout: vertical
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.kitchen_motion_right_window_sensor_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.living_room_large_window_left_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.living_room_large_window_right_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.living_room_top_window_left_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.living_room_top_window_right_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.bathroom_large_window_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.bathroom_top_window_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.nidhi_room_large_left_window_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.nidhi_room_large_right_window_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.nidhi_room_top_left_window_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.nidhi_top_right_window_contact
+                layout: vertical
+                fill_container: false
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#heating'
+            icon: phu:thermostat-v2
+            name: Heating
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:thermostat-card
+            entity: climate.living_room_heater
+            theme: noctis
+            no_card: true
+            highlight_tap: true
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#myroom'
+            icon: phu:bedroom
+            state: sensor.hue_motion_sensor_1_temperature
+            name: My Room
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Lights
+            icon: phu:bulb-general-group
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_room_ceiling_lights
+                name: Ceiling Lights
+                button_type: slider
+                icon: phu:bulb-sultan-group-v2
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_desk_2
+                name: Desk Light
+                button_type: slider
+                icon: phu:desk-stand-alt
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.canvas_cfd6
+                button_type: slider
+                name: Nano Leaf Canvas
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_tv_light
+                name: TV Light
+                button_type: slider
+                icon: mdi:television-ambient-light
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_toilet
+                name: Bathroom Light
+                button_type: slider
+                icon: phu:bulb-flood
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.cupboard
+                button_type: slider
+                icon: mdi:cupboard-outline
+                name: Cuboard Light
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.media_cabinet_light
+                name: Media Cabinet Light
+                button_type: slider
+                icon: mdi:audio-video
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            name: Media
+            icon: phu:stereo-alt
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+              - type: custom:upcoming-media-card
+                entity: sensor.plex_recently_added
+                image_style: fanart
+                style: |
+                  ha-card {
+                    background: transparent;
+                    border-style: none; 
+                    border: 0px; 
+                    box-shadow: none;
+                  }
+              - type: custom:upcoming-media-card
+                entity: sensor.sonarr_upcoming_media
+                image_style: fanart
+                style: |
+                  ha-card {
+                    background: transparent; 
+                    border-style: none; 
+                    border: 0px; 
+                    box-shadow: none;
+                  }
+              - type: custom:mushroom-media-player-card
+                use_media_info: true
+                use_media_artwork: true
+                show_volume_level: true
+                volume_controls:
+                  - volume_buttons
+                media_controls:
+                  - previous
+                  - play_pause_stop
+                  - next
+                  - on_off
+                collapsible_controls: false
+                entity: media_player.lg_webos_tv_oled55cx5lb
+                icon: phu:lg-oled55
+                name: My TV
+              - type: custom:mushroom-media-player-card
+                entity: media_player.bedroom
+                name: Sonos
+                use_media_artwork: true
+                use_media_info: true
+                volume_controls:
+                  - volume_set
+                media_controls:
+                  - play_pause_stop
+                  - previous
+                  - next
+                collapsible_controls: true
+                tap_action:
+                  action: more-info
+              - type: custom:mushroom-media-player-card
+                entity: media_player.spotify_nirav_amin
+                name: Spotify
+                use_media_info: true
+                use_media_artwork: true
+                show_volume_level: false
+                fill_container: false
+                media_controls:
+                  - previous
+                  - next
+                  - play_pause_stop
+                volume_controls:
+                  - volume_set
+                collapsible_controls: true
+              - type: custom:mushroom-template-card
+                primary: PlayStation 5
+                secondary: |-
+                  {% if is_state('switch.ps5_166_power', 'on') %}
+                    {{ state_attr('sensor.ps5_166_activity', 'title_name')
+                      or states('sensor.ps5_166_activity')
+                    }}
+                  {%- else -%}
+                    {{ states('switch.ps5_166_power') }}
+                  {%- endif -%}
+                icon: mdi:sony-playstation
+                entity: switch.ps5_166_power
+                picture: '{{state_attr(''sensor.ps5_166_activity'', ''title_image'')}}'
+                badge_icon: |-
+                  {% if is_state('sensor.ps5_166_activity', 'playing') %}
+                    mdi:controller
+                  {%- elif is_state('sensor.ps5_166_activity', 'idle') -%}
+                    mdi:sleep
+                  {%- endif -%}
+                tap_action:
+                  action: more-info
+                hold_action:
+                  action: toggle
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#livingroom'
+            icon: phu:living-room
+            state: sensor.house_temprature
+            name: Living Room
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Lights
+            icon: phu:bulb-group-golfball-e14
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.living_room_2
+                name: Left Lamp
+                button_type: slider
+                icon: phu:bulb-sultan-group-v2
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.living_room_3
+                name: Right Lamp
+                button_type: slider
+                icon: phu:bulb-sultan-group-v2
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:lg-oled55
+            name: Media
+          - square: false
+            type: grid
+            cards:
+              - type: custom:mushroom-media-player-card
+                use_media_info: true
+                use_media_artwork: true
+                show_volume_level: true
+                volume_controls:
+                  - volume_buttons
+                media_controls:
+                  - previous
+                  - play_pause_stop
+                  - next
+                  - on_off
+                collapsible_controls: false
+                entity: media_player.living_room_display
+                icon: phu:nest-hub
+                name: Living Room Display
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:aqara-contact
+            name: Sensors
+          - square: false
+            type: grid
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.living_room_large_window_left_contact
+                layout: vertical
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.living_room_large_window_right_contact
+                layout: vertical
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.living_room_top_window_left_contact
+                layout: vertical
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.living_room_top_window_right_contact
+                layout: vertical
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+            columns: 2
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#kitchen'
+            icon: phu:kitchen-alt
+            state: sensor.kitchen_sensor_temperature
+            name: Kitchen
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Lights
+            icon: phu:light-strip
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.kitchen
+                name: Left Cabinet
+                button_type: slider
+                icon: phu:light-strip
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.kitchen_2
+                name: Right Cabinet
+                button_type: slider
+                icon: phu:light-strip
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            name: Camera
+            icon: phu:unifi-protect
+          - camera_view: live
+            type: picture-glance
+            entities: []
+            title: Kitchen
+            camera_image: camera.192_168_1_1_4
+            theme: noctis
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:aqara-contact
+            name: Sensors
+          - square: false
+            type: grid
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.kitche_left_window
+                layout: vertical
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.kitchen_motion_right_window_sensor_contact
+                layout: vertical
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.patio_door_contact
+                layout: vertical
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+            columns: 2
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#porch'
+            icon: phu:rooms-porch
+            name: Porch
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Lights
+            icon: phu:bulb-group-golfball-e14
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.porch_light
+                name: Porch Lamp
+                button_type: slider
+                icon: phu:bulb-filament-alt
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            icon: phu:aqara-contact
+            name: Sensors
+          - square: false
+            type: grid
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: binary_sensor.porch_door_contact
+                layout: vertical
+                icon: mdi:motion-sensor
+                style: >
+                  ha-card {
+
+                  background: transparent; border-style: none; border: 0px;
+                  box-shadow: none;
+
+                  }
+            columns: 2
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#diningroom'
+            icon: phu:rooms-dining
+            name: Dining Room
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Lights
+            icon: phu:bulb-group-golfball-e14
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.dining_room
+                name: Left Cabinet
+                button_type: slider
+                icon: phu:bulbs-classic
+            columns: 2
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#nidhiroom'
+            icon: mdi:shield
+            name: Nidhis's Room
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Lights
+            icon: phu:bulb-group-golfball-e14
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.nidhi_room
+                name: Left Cabinet
+                button_type: slider
+                icon: phu:bulbs-classic
+            columns: 2
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#office'
+            icon: phu:rooms-office
+            name: Office
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Lights
+            icon: phu:bulb-group-golfball-e14
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.office_light
+                name: Ceiling Light
+                button_type: slider
+                icon: phu:ceiling-lamp
+            columns: 2
+          - type: custom:bubble-card
+            card_type: separator
+            name: Media
+            icon: phu:lg-oled55
+          - square: true
+            type: grid
+            cards:
+              - type: custom:mushroom-media-player-card
+                use_media_info: true
+                use_media_artwork: true
+                show_volume_level: true
+                volume_controls:
+                  - volume_buttons
+                media_controls:
+                  - previous
+                  - play_pause_stop
+                  - next
+                  - on_off
+                collapsible_controls: false
+                entity: media_player.office_display
+                icon: phu:nest-hub
+                name: Living Room Display
+            columns: 2
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#groundfloorlights'
+            icon: mdi:lightbulb-group
+            name: Ground Floor Lights
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Lights
+            icon: phu:bulb-group-golfball-e14
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.living_room_2
+                name: Left Lamp
+                button_type: slider
+                icon: phu:bulb-sultan-group-v2
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.living_room_3
+                name: Right Lamp
+                button_type: slider
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#firstfloorlights'
+            icon: mdi:lightbulb-group
+            name: First Floor Lights
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Lights
+            icon: phu:bulb-group-golfball-e14
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.nidhi_room_2
+                name: Nidhi's lamp
+                button_type: slider
+                icon: phu:bulb-candle
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.passage_2
+                name: Passage
+                button_type: slider
+                icon: phu:bulbs-classic
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.office_light
+                button_type: slider
+                name: Office Light
+                icon: phu:ceiling-lamp
+      - type: vertical-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: pop-up
+            hash: '#secondfloorlights'
+            icon: mdi:lightbulb-group
+            name: Second Floor Lights
+            bg_opacity: '88'
+            bg_blur: '14'
+            shadow_opacity: '5'
+            bg_color: '#3c4454'
+          - type: custom:bubble-card
+            card_type: separator
+            name: Lights
+            icon: phu:bulb-general-group
+          - square: false
+            type: grid
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_room_ceiling_lights
+                name: Ceiling Lights
+                button_type: slider
+                icon: phu:bulb-sultan-group-v2
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_desk_2
+                name: Desk Light
+                button_type: slider
+                icon: phu:desk-stand-alt
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.canvas_cfd6
+                button_type: slider
+                name: Nano Leaf Canvas
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_tv_light
+                name: TV Light
+                button_type: slider
+                icon: mdi:television-ambient-light
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.my_toilet
+                name: Bathroom Light
+                button_type: slider
+                icon: phu:bulb-flood
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.cupboard
+                button_type: slider
+                icon: mdi:cupboard-outline
+                name: Cuboard Light
+              - type: custom:bubble-card
+                card_type: button
+                entity: light.media_cabinet_light
+                name: Media Cabinet Light
+                button_type: slider
+                icon: mdi:audio-video
+            columns: 2
